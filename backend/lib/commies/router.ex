@@ -22,8 +22,15 @@ defmodule Commies.Router do
   end
 
   get "/links/:link_id/comments" do
+    import Ecto.Query
+
+    comments =
+      Comment
+      |> where(link_id: ^link_id)
+      |> Repo.all()
+
     body = %{
-      comments: []
+      comments: comments
     }
 
     send_json_resp(conn, 200, body)
