@@ -1,7 +1,7 @@
 defmodule Commies.MixProject do
   use Mix.Project
 
-  def project do
+  def project() do
     [
       app: :commies,
       version: "0.1.0",
@@ -11,13 +11,14 @@ defmodule Commies.MixProject do
     ]
   end
 
-  def application do
+  def application() do
     [
+      mod: {Commies, []},
       extra_applications: [:logger]
     ]
   end
 
-  defp deps do
+  defp deps() do
     [
       {:plug, "~> 1.5.1"}
     ]
