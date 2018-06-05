@@ -1,6 +1,11 @@
 defmodule Commies.Router do
   use Plug.Router
 
+  alias Commies.{
+    Repo,
+    Comment
+  }
+
   plug(
     Plug.Parsers,
     parsers: [:json],
@@ -25,17 +30,33 @@ defmodule Commies.Router do
   end
 
   post "/links/:link_id/comments" do
-    body = %{
-      id: 1024,
-      content: "This is gonna be fun"
-    }
+    changeset =
+      conn.body_params
+      |> Map.put("link_id", link_id)
+      |> Comment.create_changeset()
 
-    send_json_resp(conn, 200, body)
+    case Repo.insert(changeset) do
+      {:ok, comment} ->
+        send_json_resp(conn, 200, comment)
+
+      {:error, changeset} ->
+        body = %{
+          errors: format_changeset_errors(changeset)
+        }
+
+        send_json_resp(conn, 200, body)
+    end
   end
 
   defp send_json_resp(conn, status, body) do
     conn
     |> put_resp_header("content-type", "application/json")
     |> send_resp(status, Jason.encode!(body))
+  end
+
+  defp format_changeset_errors(changeset) do
+    Enum.map(changeset.errors, fn {field_name, {error, _}} ->
+      "#{field_name} #{error}"
+    end)
   end
 end
