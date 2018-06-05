@@ -20,7 +20,8 @@ defmodule Commies.MixProject do
 
   defp deps() do
     [
-      {:plug, "~> 1.5.1"}
+      {:plug, "~> 1.5.1"},
+      {:cowboy, "~> 1.1"}
     ]
   end
 end

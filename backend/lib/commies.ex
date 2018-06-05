@@ -1,8 +1,12 @@
 defmodule Commies do
   use Application
 
+  @port 8000
+
   def start(_type, _args) do
-    children = []
+    children = [
+      {Plug.Adapters.Cowboy, scheme: :http, plug: Commies.Router, options: [port: @port]}
+    ]
 
     Supervisor.start_link(children, strategy: :one_for_one)
   end
