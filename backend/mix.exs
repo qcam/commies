@@ -24,7 +24,8 @@ defmodule Commies.MixProject do
       {:cowboy, "~> 1.1"},
       {:ecto, "~> 2.0"},
       {:postgrex, "~> 0.11"},
-      {:jason, "~> 1.0"}
+      {:jason, "~> 1.0"},
+      {:hackney, "== 1.6.5"}
     ]
   end
 end
