@@ -80,7 +80,11 @@ defmodule Commies.Router do
 
       case upsert_user(params) do
         {:ok, user} ->
-          send_json_resp(conn, 200, user)
+          body = %{
+            access_token: access_token,
+            user: user
+          }
+          send_json_resp(conn, 200, body)
 
         {:error, changeset} ->
           body = %{
