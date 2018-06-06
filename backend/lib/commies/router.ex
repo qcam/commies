@@ -16,6 +16,7 @@ defmodule Commies.Router do
   )
 
   plug(Plug.Logger)
+  plug(Commies.Plug.Auth)
   plug(:match)
   plug(:dispatch)
 
@@ -39,21 +40,26 @@ defmodule Commies.Router do
   end
 
   post "/links/:link_id/comments" do
-    changeset =
-      conn.body_params
-      |> Map.put("link_id", link_id)
-      |> Comment.create_changeset()
+    if user = conn.assigns[:authenticated_user] do
+      changeset =
+        conn.body_params
+        |> Map.put("link_id", link_id)
+        |> Map.put("user_id", user.id)
+        |> Comment.create_changeset()
 
-    case Repo.insert(changeset) do
-      {:ok, comment} ->
-        send_json_resp(conn, 200, comment)
+      case Repo.insert(changeset) do
+        {:ok, comment} ->
+          send_json_resp(conn, 200, comment)
 
-      {:error, changeset} ->
-        body = %{
-          errors: format_changeset_errors(changeset)
-        }
+        {:error, changeset} ->
+          body = %{
+            errors: format_changeset_errors(changeset)
+          }
 
-        send_json_resp(conn, 200, body)
+          send_json_resp(conn, 200, body)
+      end
+    else
+      send_json_resp(conn, 401, [])
     end
   end
 
@@ -84,6 +90,7 @@ defmodule Commies.Router do
             access_token: access_token,
             user: user
           }
+
           send_json_resp(conn, 200, body)
 
         {:error, changeset} ->
