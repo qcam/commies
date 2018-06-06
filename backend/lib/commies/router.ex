@@ -56,7 +56,7 @@ defmodule Commies.Router do
             errors: format_changeset_errors(changeset)
           }
 
-          send_json_resp(conn, 200, body)
+          send_json_resp(conn, 400, body)
       end
     else
       send_json_resp(conn, 401, [])
