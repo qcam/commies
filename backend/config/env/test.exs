@@ -4,7 +4,8 @@ config :commies, Commies.Repo,
   database: "commies_test",
   username: "postgres",
   password: "postgres",
-  hostname: "localhost"
+  hostname: "localhost",
+  pool: Ecto.Adapters.SQL.Sandbox
 
 config :commies, Commies.Auth.Github,
   client_id: "dummy",
