@@ -3,7 +3,7 @@ defmodule Commies.Comment do
 
   import Ecto.Changeset
 
-  @derive {Jason.Encoder, only: [:content, :link_id]}
+  @derive {Jason.Encoder, only: [:id, :content, :link_id]}
 
   schema "comments" do
     belongs_to(:user, Commies.User)
@@ -22,5 +22,14 @@ defmodule Commies.Comment do
     |> cast(params, allowed_fields)
     |> validate_required(required_fields)
     |> foreign_key_constraint(:user_id)
+  end
+
+  def update_changeset(%__MODULE__{} = comment, params) do
+    allowed_fields = [:content, :link_id]
+    required_fields = [:content, :link_id]
+
+    comment
+    |> cast(params, allowed_fields)
+    |> validate_required(required_fields)
   end
 end

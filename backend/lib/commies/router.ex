@@ -1,6 +1,8 @@
 defmodule Commies.Router do
   use Plug.Router
 
+  import Ecto.Query
+
   alias Commies.{
     Auth,
     Comment,
@@ -25,8 +27,6 @@ defmodule Commies.Router do
   end
 
   get "/links/:link_id/comments" do
-    import Ecto.Query
-
     comments =
       Comment
       |> where(link_id: ^link_id)
@@ -57,6 +57,36 @@ defmodule Commies.Router do
           }
 
           send_json_resp(conn, 400, body)
+      end
+    else
+      send_json_resp(conn, 401, [])
+    end
+  end
+
+  put "/links/:link_id/comments/:comment_id" do
+    if user = conn.assigns[:authenticated_user] do
+      comment =
+        Comment
+        |> where(id: ^comment_id)
+        |> where(user_id: ^user.id)
+        |> Repo.one()
+
+      if comment do
+        changeset = Comment.update_changeset(comment, conn.body_params)
+
+        case Repo.update(changeset) do
+          {:ok, comment} ->
+            send_json_resp(conn, 200, comment)
+
+          {:error, changeset} ->
+            body = %{
+              errors: format_changeset_errors(changeset)
+            }
+
+            send_json_resp(conn, 400, body)
+        end
+      else
+        send_json_resp(conn, 404, %{errors: ["not found"]})
       end
     else
       send_json_resp(conn, 401, [])
