@@ -82,6 +82,54 @@ defmodule Commies.RouterTest do
                  "link_id" => link_id
                }
     end
+
+    test "disallows updating another user's comment" do
+      link_id = "1"
+
+      Repo.insert!(%User{
+        name: "user-1",
+        email: "a@b.c",
+        auth_provider: "github",
+        auth_user_id: "1024"
+      })
+
+      other_user =
+        Repo.insert!(%User{
+          name: "user-2",
+          email: "b@c.d",
+          auth_provider: "github",
+          auth_user_id: "2048"
+        })
+
+      comment =
+        Repo.insert!(%Comment{
+          link_id: link_id,
+          user_id: other_user.id,
+          content: "hello world"
+        })
+
+      stub(Commies.HTTP.FakeClient, :request, fn :get,
+                                                 req_url,
+                                                 _req_headers,
+                                                 _req_body,
+                                                 _req_options ->
+        assert req_url == "https://api.github.com/user"
+        {:ok, 200, [], Jason.encode!(%{id: 1024, login: "foo"})}
+      end)
+
+      req_body = %{content: "a little fox"}
+
+      body =
+        :put
+        |> conn("/links/#{link_id}/comments/#{comment.id}", Jason.encode!(req_body))
+        |> put_req_header("authorization", "github:abcdef")
+        |> put_req_header("accept", "application/json")
+        |> put_req_header("content-type", "application/json")
+        |> Router.call([])
+        |> json_response(404)
+
+      assert body == %{"errors" => ["not found"]}
+    end
   end
 
   defp json_response(conn, status) do
