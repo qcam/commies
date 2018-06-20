@@ -132,6 +132,94 @@ defmodule Commies.RouterTest do
     end
   end
 
+  describe "DELETE /links/:link_id/comments/:comment_id" do
+    @describetag :capture_log
+
+    test "deletes comment" do
+      link_id = "1"
+
+      user =
+        Repo.insert!(%User{
+          name: "user-1",
+          email: "a@b.c",
+          auth_provider: "github",
+          auth_user_id: "1024"
+        })
+
+      comment =
+        Repo.insert!(%Comment{
+          link_id: link_id,
+          user_id: user.id,
+          content: "hello world"
+        })
+
+      stub(Commies.HTTP.FakeClient, :request, fn :get,
+                                                 req_url,
+                                                 _req_headers,
+                                                 _req_body,
+                                                 _req_options ->
+        assert req_url == "https://api.github.com/user"
+        {:ok, 200, [], Jason.encode!(%{id: 1024, login: "foo"})}
+      end)
+
+      conn =
+        :delete
+        |> conn("/links/#{link_id}/comments/#{comment.id}")
+        |> put_req_header("authorization", "github:abcdef")
+        |> put_req_header("accept", "application/json")
+        |> put_req_header("content-type", "application/json")
+        |> Router.call([])
+
+      assert conn.status == 204
+    end
+
+    test "disallows updating another user's comment" do
+      link_id = "1"
+
+      Repo.insert!(%User{
+        name: "user-1",
+        email: "a@b.c",
+        auth_provider: "github",
+        auth_user_id: "1024"
+      })
+
+      other_user =
+        Repo.insert!(%User{
+          name: "user-2",
+          email: "b@c.d",
+          auth_provider: "github",
+          auth_user_id: "2048"
+        })
+
+      comment =
+        Repo.insert!(%Comment{
+          link_id: link_id,
+          user_id: other_user.id,
+          content: "hello world"
+        })
+
+      stub(Commies.HTTP.FakeClient, :request, fn :get,
+                                                 req_url,
+                                                 _req_headers,
+                                                 _req_body,
+                                                 _req_options ->
+        assert req_url == "https://api.github.com/user"
+        {:ok, 200, [], Jason.encode!(%{id: 1024, login: "foo"})}
+      end)
+
+      conn =
+        :delete
+        |> conn("/links/#{link_id}/comments/#{comment.id}")
+        |> put_req_header("authorization", "github:abcdef")
+        |> put_req_header("accept", "application/json")
+        |> put_req_header("content-type", "application/json")
+        |> Router.call([])
+
+      assert conn.status == 404
+      assert Jason.decode!(conn.resp_body) == %{"errors" => ["not found"]}
+    end
+  end
+
   defp json_response(conn, status) do
     assert conn.status == status
     assert get_resp_header(conn, "content-type") == ["application/json"]

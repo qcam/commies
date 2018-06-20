@@ -93,6 +93,26 @@ defmodule Commies.Router do
     end
   end
 
+  delete "/links/:link_id/comments/:comment_id" do
+    if user = conn.assigns[:authenticated_user] do
+      delete_result =
+        Comment
+        |> where(id: ^comment_id)
+        |> where(user_id: ^user.id)
+        |> Repo.delete_all()
+
+      case delete_result do
+        {1, nil} ->
+          send_resp(conn, 204, [])
+
+        {0, _} ->
+          send_json_resp(conn, 404, %{errors: ["not found"]})
+      end
+    else
+      send_json_resp(conn, 401, [])
+    end
+  end
+
   get "/login/github" do
     redirect_url = Auth.Github.oauth_url("user:email", "http://localhost:8000/auth/github")
 
