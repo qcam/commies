@@ -7,6 +7,7 @@ defmodule Commies.MixProject do
       version: "0.1.0",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
+      elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps()
     ]
   end
@@ -18,6 +19,9 @@ defmodule Commies.MixProject do
     ]
   end
 
+  defp elixirc_paths(:test), do: ["test/support", "lib"]
+  defp elixirc_paths(_), do: ["lib"]
+
   defp deps() do
     [
       {:plug, "~> 1.5.1"},
@@ -25,7 +29,8 @@ defmodule Commies.MixProject do
       {:ecto, "~> 2.0"},
       {:postgrex, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:hackney, "== 1.6.5"}
+      {:hackney, "== 1.6.5"},
+      {:mox, "~> 0.3.2", only: [:test]}
     ]
   end
 end
