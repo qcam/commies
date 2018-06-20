@@ -8,4 +8,5 @@ config :commies, Commies.Repo,
 
 config :commies, Commies.Auth.Github,
   client_id: "dummy",
-  client_secret: "dummy"
+  client_secret: "dummy",
+  http_client: Commies.HTTP.FakeClient

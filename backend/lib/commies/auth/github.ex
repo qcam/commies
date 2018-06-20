@@ -7,10 +7,11 @@ defmodule Commies.Auth.Github do
     pool: :auth_pool
   ]
 
-  github_credential = Application.fetch_env!(:commies, __MODULE__)
+  options = Application.fetch_env!(:commies, __MODULE__)
 
-  @client_id Keyword.fetch!(github_credential, :client_id)
-  @client_secret Keyword.fetch!(github_credential, :client_secret)
+  @client_id Keyword.fetch!(options, :client_id)
+  @client_secret Keyword.fetch!(options, :client_secret)
+  @http_client Keyword.fetch!(options, :http_client)
 
   def exchange_access_token(code) do
     req_headers = [
@@ -27,7 +28,7 @@ defmodule Commies.Auth.Github do
 
     req_url = "https://github.com/login/oauth/access_token"
 
-    case :hackney.request(:post, req_url, req_headers, req_body, @req_options) do
+    case @http_client.request(:post, req_url, req_headers, req_body, @req_options) do
       {:ok, 200, _resp_headers, resp_body} ->
         payload = Jason.decode!(resp_body)
 
@@ -67,7 +68,7 @@ defmodule Commies.Auth.Github do
 
     req_url = "https://api.github.com/user"
 
-    case :hackney.request(:get, req_url, req_headers, req_body, @req_options) do
+    case @http_client.request(:get, req_url, req_headers, req_body, @req_options) do
       {:ok, 200, _resp_headers, resp_body} ->
         %{
           "id" => id,
@@ -101,7 +102,7 @@ defmodule Commies.Auth.Github do
 
     req_url = "https://api.github.com/user/emails"
 
-    case :hackney.request(:get, req_url, req_headers, req_body, @req_options) do
+    case @http_client.request(:get, req_url, req_headers, req_body, @req_options) do
       {:ok, 200, _resp_headers, resp_body} ->
         email =
           resp_body
