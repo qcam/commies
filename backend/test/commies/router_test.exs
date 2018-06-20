@@ -2,7 +2,21 @@ defmodule Commies.RouterTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
-  alias Commies.Router
+  import Mox
+
+  alias Commies.{
+    Comment,
+    Repo,
+    Router,
+    User
+  }
+
+  setup :verify_on_exit!
+
+  setup do
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
+    :ok
+  end
 
   describe "GET /probe" do
     @describetag :capture_log
@@ -16,5 +30,64 @@ defmodule Commies.RouterTest do
       assert conn.status == 200
       assert conn.resp_body == ""
     end
+  end
+
+  describe "PUT /links/:link_id/comments/:comment_id" do
+    @describetag :capture_log
+
+    test "updates comment" do
+      link_id = "1"
+
+      user =
+        Repo.insert!(%User{
+          name: "user-1",
+          email: "a@b.c",
+          auth_provider: "github",
+          auth_user_id: "1024"
+        })
+
+      comment =
+        Repo.insert!(%Comment{
+          link_id: link_id,
+          user_id: user.id,
+          content: "hello world"
+        })
+
+      stub(Commies.HTTP.FakeClient, :request, fn :get,
+                                                 req_url,
+                                                 _req_headers,
+                                                 _req_body,
+                                                 _req_options ->
+        assert req_url == "https://api.github.com/user"
+        {:ok, 200, [], Jason.encode!(%{id: 1024, login: "foo"})}
+      end)
+
+      req_body = %{
+        content: "a little fox"
+      }
+
+      body =
+        :put
+        |> conn("/links/#{link_id}/comments/#{comment.id}", Jason.encode!(req_body))
+        |> put_req_header("authorization", "github:abcdef")
+        |> put_req_header("accept", "application/json")
+        |> put_req_header("content-type", "application/json")
+        |> Router.call([])
+        |> json_response(200)
+
+      assert body ==
+               %{
+                 "content" => "a little fox",
+                 "id" => comment.id,
+                 "link_id" => link_id
+               }
+    end
+  end
+
+  defp json_response(conn, status) do
+    assert conn.status == status
+    assert get_resp_header(conn, "content-type") == ["application/json"]
+
+    Jason.decode!(conn.resp_body)
   end
 end
