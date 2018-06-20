@@ -50,4 +50,39 @@ defmodule Commies.Auth.GithubTest do
       assert log =~ "Received unexpected response from Github OAuth API, status: 500"
     end
   end
+
+  describe "get_user/1" do
+    test "fetches user info from Github API" do
+      access_token = "abcdef"
+
+      expect(FakeClient, :request, fn :get, req_url, req_headers, req_body, _req_options ->
+        assert req_url == "https://api.github.com/user"
+
+        assert {"content-type", "application/json"} in req_headers
+        assert {"accept", "application/json"} in req_headers
+
+        assert req_body == []
+
+        {:ok, 200, [], Jason.encode!(%{id: 1, login: "foo"})}
+      end)
+
+      assert {:ok, user} = Github.get_user(access_token)
+      assert user == %{id: "1", name: "foo"}
+    end
+
+    test "handles unexpected response" do
+      access_token = "abcdef"
+
+      expect(FakeClient, :request, fn :get, _req_url, _req_headers, _req_body, _req_options ->
+        {:ok, 404, [], []}
+      end)
+
+      log =
+        capture_log(fn ->
+          assert Github.get_user(access_token) == :error
+        end)
+
+      assert log =~ "Received unexpected response from Github API, status: 404"
+    end
+  end
 end
