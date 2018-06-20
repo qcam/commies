@@ -21,6 +21,7 @@ defmodule Commies.Comment do
     %__MODULE__{}
     |> cast(params, allowed_fields)
     |> validate_required(required_fields)
+    |> validate_length(:content, min: 5)
     |> foreign_key_constraint(:user_id)
   end
 
@@ -30,6 +31,7 @@ defmodule Commies.Comment do
 
     comment
     |> cast(params, allowed_fields)
+    |> validate_length(:content, min: 5)
     |> validate_required(required_fields)
   end
 end
