@@ -1,5 +1,5 @@
 defmodule Commies.Auth.Token do
-  @secret "longlivetheparty"
+  @secret :commies |> Application.fetch_env!(__MODULE__) |> Keyword.fetch!(:secret)
 
   def generate(provider, access_token, signed_at \\ DateTime.utc_now()) do
     payload = %{
