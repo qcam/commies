@@ -124,9 +124,9 @@ defmodule Commies.Router do
   get "/auth/github" do
     code = Map.fetch!(conn.query_params, "code")
 
-    with {:ok, access_token} <- Auth.Github.exchange_access_token(code),
-         {:ok, user} <- Auth.Github.get_user(access_token),
-         {:ok, email} <- Auth.Github.get_user_email(access_token) do
+    with {:ok, provider_access_token} <- Auth.Github.exchange_access_token(code),
+         {:ok, user} <- Auth.Github.get_user(provider_access_token),
+         {:ok, email} <- Auth.Github.get_user_email(provider_access_token) do
       params = %{
         name: user.name,
         email: email,
@@ -136,6 +136,8 @@ defmodule Commies.Router do
 
       case upsert_user(params) do
         {:ok, user} ->
+          access_token = Auth.Token.generate("github", provider_access_token)
+
           body = %{
             access_token: access_token,
             user: user

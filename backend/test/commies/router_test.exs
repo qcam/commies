@@ -66,10 +66,12 @@ defmodule Commies.RouterTest do
         content: "a little fox"
       }
 
+      access_token = Commies.Auth.Token.generate("github", "abcdef")
+
       body =
         :put
         |> conn("/links/#{link_id}/comments/#{comment.id}", Jason.encode!(req_body))
-        |> put_req_header("authorization", "github:abcdef")
+        |> put_req_header("authorization", access_token)
         |> put_req_header("accept", "application/json")
         |> put_req_header("content-type", "application/json")
         |> Router.call([])
@@ -119,10 +121,12 @@ defmodule Commies.RouterTest do
 
       req_body = %{content: "a little fox"}
 
+      access_token = Commies.Auth.Token.generate("github", "abcdef")
+
       body =
         :put
         |> conn("/links/#{link_id}/comments/#{comment.id}", Jason.encode!(req_body))
-        |> put_req_header("authorization", "github:abcdef")
+        |> put_req_header("authorization", access_token)
         |> put_req_header("accept", "application/json")
         |> put_req_header("content-type", "application/json")
         |> Router.call([])
@@ -162,10 +166,12 @@ defmodule Commies.RouterTest do
         {:ok, 200, [], Jason.encode!(%{id: 1024, login: "foo"})}
       end)
 
+      access_token = Commies.Auth.Token.generate("github", "abcdef")
+
       conn =
         :delete
         |> conn("/links/#{link_id}/comments/#{comment.id}")
-        |> put_req_header("authorization", "github:abcdef")
+        |> put_req_header("authorization", access_token)
         |> put_req_header("accept", "application/json")
         |> put_req_header("content-type", "application/json")
         |> Router.call([])
@@ -198,6 +204,8 @@ defmodule Commies.RouterTest do
           content: "hello world"
         })
 
+      access_token = Commies.Auth.Token.generate("github", "abcdef")
+
       stub(Commies.HTTP.FakeClient, :request, fn :get,
                                                  req_url,
                                                  _req_headers,
@@ -210,7 +218,7 @@ defmodule Commies.RouterTest do
       conn =
         :delete
         |> conn("/links/#{link_id}/comments/#{comment.id}")
-        |> put_req_header("authorization", "github:abcdef")
+        |> put_req_header("authorization", access_token)
         |> put_req_header("accept", "application/json")
         |> put_req_header("content-type", "application/json")
         |> Router.call([])

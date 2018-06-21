@@ -11,8 +11,6 @@ defmodule Commies.Plug.Auth do
 
   require Logger
 
-  @supported_auth_providers ["github"]
-
   def init(options), do: options
 
   def call(%Plug.Conn{} = conn, _options) do
@@ -26,11 +24,11 @@ defmodule Commies.Plug.Auth do
   end
 
   defp authorize(conn) do
-    with {:ok, provider, access_token} <- fetch_authorization(conn),
-         {:ok, provider_user} <- auth_provider(provider).get_user(access_token) do
+    with {:ok, payload} <- fetch_auth_payload(conn),
+         {:ok, provider_user} <- auth_provider(payload.provider).get_user(payload.token) do
       user =
         User
-        |> where(auth_user_id: ^provider_user.id, auth_provider: ^provider)
+        |> where(auth_user_id: ^provider_user.id, auth_provider: ^payload.provider)
         |> select([:id])
         |> Repo.one()
 
@@ -44,12 +42,11 @@ defmodule Commies.Plug.Auth do
     end
   end
 
-  defp fetch_authorization(conn) do
+  defp fetch_auth_payload(conn) do
     with authorizations when authorizations != [] <- get_req_header(conn, "authorization"),
-         authorization <- List.first(authorizations),
-         [provider, access_token] when provider in @supported_auth_providers <-
-           String.split(authorization, ":", parts: 2) do
-      {:ok, provider, access_token}
+         access_token <- List.first(authorizations),
+         {:ok, payload} <- Auth.Token.verify(access_token) do
+      {:ok, payload}
     else
       _ -> :error
     end
