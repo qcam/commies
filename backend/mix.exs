@@ -34,6 +34,7 @@ defmodule Commies.MixProject do
       {:hackney, "== 1.6.5"},
       {:distillery, "~> 1.5", runtime: false},
       {:dicon, "~> 0.5.0", runtime: false},
+      {:ex_machina, "~> 2.2", only: [:test]},
       {:mox, "~> 0.3.2", only: [:test]}
     ]
   end

@@ -3,6 +3,7 @@ defmodule Commies.Router.CommentTest do
   use Plug.Test
 
   import Mox
+  import Commies.Factory
 
   alias Commies.{
     Comment,
@@ -16,6 +17,39 @@ defmodule Commies.Router.CommentTest do
   setup do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
     :ok
+  end
+
+  describe "GET /links/:link_id/comments" do
+    @describetag :capture_log
+
+    test "lists all comments of the link" do
+      link_id = "1"
+
+      user = insert(:user)
+
+      comments = insert_list(3, :comment, %{link_id: link_id, user_id: user.id})
+
+      comment_ids =
+        comments
+        |> Enum.sort_by(& &1.inserted_at)
+        |> Enum.map(& &1.id)
+
+      comment1 = List.first(comments)
+
+      body =
+        :get
+        |> conn("/links/#{link_id}/comments")
+        |> Router.call([])
+        |> json_response(200)
+
+      assert Enum.map(body["comments"], & &1["id"]) == comment_ids
+
+      assert [comment | _] = body["comments"]
+      assert comment["id"] == comment1.id
+      assert comment["content"] == comment1.content
+      assert comment["inserted_at"] == NaiveDateTime.to_iso8601(comment1.inserted_at)
+      assert comment["user"]["name"] == user.name
+    end
   end
 
   describe "PUT /links/:link_id/comments/:comment_id" do

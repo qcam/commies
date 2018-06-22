@@ -19,13 +19,32 @@ defmodule Commies.Router.Comment do
     comments =
       Comment
       |> where(link_id: ^link_id)
+      |> order_by(:inserted_at)
+      |> preload(:user)
       |> Repo.all()
 
     body = %{
-      comments: comments
+      comments: render_list(comments)
     }
 
     Router.send_json_resp(conn, 200, body)
+  end
+
+  defp render_list(comments) do
+    Enum.map(comments, fn comment ->
+      %{
+        id: comment.id,
+        content: comment.content,
+        inserted_at: comment.inserted_at,
+        user: render_user(comment.user)
+      }
+    end)
+  end
+
+  defp render_user(user) do
+    %{
+      name: user.name
+    }
   end
 
   post "/" do
