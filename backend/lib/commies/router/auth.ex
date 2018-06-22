@@ -18,13 +18,16 @@ defmodule Commies.Router.Auth do
 
     with {:ok, redirect_url} <- Map.fetch(conn.query_params, "r") do
       encoded_redirect_url = Base.encode64(redirect_url)
+
       signature =
         encoded_redirect_url
         |> Auth.Token.sign()
         |> Base.encode64()
+
       state = "#{encoded_redirect_url}.#{signature}"
 
       location = Auth.Github.oauth_url("user:email", callback_url, state)
+
       conn
       |> put_resp_header("location", location)
       |> send_resp(302, [])

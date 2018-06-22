@@ -54,6 +54,7 @@ defmodule Commies.Router.AuthTest do
     test "exchanges access token with Github API" do
       location = "http://example.com?a=1&b=2"
       state = compute_state(location)
+
       req_params = %{
         "code" => "foo:bar",
         "state" => state
@@ -109,6 +110,7 @@ defmodule Commies.Router.AuthTest do
 
   defp compute_state(url) do
     encoded_url = Base.encode64(url)
+
     signature =
       encoded_url
       |> Auth.Token.sign()
