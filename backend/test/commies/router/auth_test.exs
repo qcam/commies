@@ -5,6 +5,7 @@ defmodule Commies.Router.AuthTest do
   import Mox
 
   alias Commies.{
+    Auth,
     Repo,
     Router
   }
@@ -20,9 +21,13 @@ defmodule Commies.Router.AuthTest do
 
   describe "GET /oauth/login/github" do
     test "redirects to Github" do
+      url = "https://example.com?a=1&b=2"
+      state = compute_state(url)
+
       conn =
         :get
         |> conn("/oauth/login/github")
+        |> Map.put(:query_params, %{"r" => url})
         |> Router.call([])
 
       assert conn.resp_body == ""
@@ -41,13 +46,18 @@ defmodule Commies.Router.AuthTest do
       assert query["client_id"] == "dummy"
       assert query["redirect_uri"] == "http://localhost:3000/oauth/auth/github"
       assert query["scope"] == "user:email"
+      assert query["state"] == state
     end
   end
 
   describe "GET /oauth/auth/github" do
     test "exchanges access token with Github API" do
+      location = "http://example.com?a=1&b=2"
+      state = compute_state(location)
+
       req_params = %{
-        "code" => "foo:bar"
+        "code" => "foo:bar",
+        "state" => state
       }
 
       stub(Commies.HTTP.FakeClient, :request, fn
@@ -62,14 +72,22 @@ defmodule Commies.Router.AuthTest do
           {:ok, 200, [], Jason.encode!([%{email: "test@test.com", primary: true}])}
       end)
 
-      body =
+      conn =
         :get
         |> conn("/oauth/auth/github")
         |> Map.put(:query_params, req_params)
         |> Router.call([])
-        |> json_response(200)
 
-      assert Map.has_key?(body, "access_token")
+      assert conn.status == 302
+      assert [redirect_url] = get_resp_header(conn, "location")
+      assert uri = URI.parse(redirect_url)
+      assert uri.host == "example.com"
+      assert query = URI.decode_query(uri.query)
+      assert query["a"] == "1"
+      assert query["b"] == "2"
+      assert {:ok, auth_payload} = Auth.Token.verify(query["token"])
+      assert auth_payload.provider == "github"
+      assert auth_payload.token == "123456"
     end
 
     test "handles bad request" do
@@ -88,5 +106,16 @@ defmodule Commies.Router.AuthTest do
     assert get_resp_header(conn, "content-type") == ["application/json"]
 
     Jason.decode!(conn.resp_body)
+  end
+
+  defp compute_state(url) do
+    encoded_url = Base.encode64(url)
+
+    signature =
+      encoded_url
+      |> Auth.Token.sign()
+      |> Base.encode64()
+
+    "#{encoded_url}.#{signature}"
   end
 end

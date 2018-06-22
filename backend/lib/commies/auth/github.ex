@@ -122,11 +122,12 @@ defmodule Commies.Auth.Github do
     end
   end
 
-  def oauth_url(scope, redirect_uri) do
+  def oauth_url(scope, redirect_uri, state) do
     query_params = %{
       client_id: @client_id,
       redirect_uri: redirect_uri,
-      scope: scope
+      scope: scope,
+      state: state
     }
 
     "https://github.com/login/oauth/authorize?#{URI.encode_query(query_params)}"
