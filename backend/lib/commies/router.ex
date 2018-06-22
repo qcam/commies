@@ -7,6 +7,7 @@ defmodule Commies.Router do
     Auth,
     Comment,
     Repo,
+    RouteHelper,
     User
   }
 
@@ -114,7 +115,8 @@ defmodule Commies.Router do
   end
 
   get "/login/github" do
-    redirect_url = Auth.Github.oauth_url("user:email", "http://localhost:8000/auth/github")
+    callback_url = RouteHelper.append_base("/auth/github")
+    redirect_url = Auth.Github.oauth_url("user:email", callback_url)
 
     conn
     |> put_resp_header("location", redirect_url)

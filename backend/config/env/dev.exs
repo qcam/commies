@@ -13,4 +13,6 @@ config :commies, Commies.Auth.Github,
 
 config :commies, Commies.Auth.Token, secret: "yoyo"
 
+config :commies, Commies.RouteHelper, base: "http://localhost:8000"
+
 import_config "../{dicon.exs}"

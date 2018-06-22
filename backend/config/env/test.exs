@@ -12,4 +12,6 @@ config :commies, Commies.Auth.Github,
   client_secret: "dummy",
   http_client: Commies.HTTP.FakeClient
 
+config :commies, Commies.RouteHelper, base: "http://localhost:3000"
+
 config :commies, Commies.Auth.Token, secret: "longlivetheparty"
