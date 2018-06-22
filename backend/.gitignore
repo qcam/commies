@@ -7,3 +7,5 @@ erl_crash.dump
 *.ez
 commies-*.tar
 config/env/*.secret.exs
+config/dicon.exs
+_release/

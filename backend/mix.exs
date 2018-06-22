@@ -30,6 +30,8 @@ defmodule Commies.MixProject do
       {:postgrex, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:hackney, "== 1.6.5"},
+      {:distillery, "~> 1.5", runtime: false},
+      {:dicon, "~> 0.5.0", runtime: false},
       {:mox, "~> 0.3.2", only: [:test]}
     ]
   end

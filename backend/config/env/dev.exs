@@ -12,3 +12,5 @@ config :commies, Commies.Auth.Github,
   http_client: Commies.HTTP.StandardClient
 
 config :commies, Commies.Auth.Token, secret: "yoyo"
+
+import_config "../{dicon.exs}"
