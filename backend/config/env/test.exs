@@ -11,3 +11,5 @@ config :commies, Commies.Auth.Github,
   client_id: "dummy",
   client_secret: "dummy",
   http_client: Commies.HTTP.FakeClient
+
+config :commies, Commies.Auth.Token, secret: "longlivetheparty"
