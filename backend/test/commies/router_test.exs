@@ -2,11 +2,7 @@ defmodule Commies.RouterTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
-  import Mox
-
   alias Commies.Router
-
-  setup :verify_on_exit!
 
   describe "GET /probe" do
     @describetag :capture_log
