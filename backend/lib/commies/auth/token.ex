@@ -36,7 +36,7 @@ defmodule Commies.Auth.Token do
     end
   end
 
-  defp sign(payload) do
+  def sign(payload) do
     :crypto.hmac(:sha256, @secret, payload)
   end
 end
