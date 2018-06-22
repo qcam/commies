@@ -228,6 +228,20 @@ defmodule Commies.RouterTest do
     end
   end
 
+  describe "non exisiting route" do
+    @describetag :capture_log
+
+    test "reponds with corresponding status" do
+      body =
+        :get
+        |> conn("/i-dont-exist")
+        |> Router.call([])
+        |> json_response(404)
+
+      assert body == %{"errors" => ["not found"]}
+    end
+  end
+
   defp json_response(conn, status) do
     assert conn.status == status
     assert get_resp_header(conn, "content-type") == ["application/json"]

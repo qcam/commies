@@ -162,6 +162,10 @@ defmodule Commies.Router do
     end
   end
 
+  match _ do
+    send_json_resp(conn, 404, %{errors: ["not found"]})
+  end
+
   defp upsert_user(params) do
     changeset = User.upsert_changeset(params)
 
