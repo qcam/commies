@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 
-ARG ERLANG_VERSION=21.0
-ARG ELIXIR_VERSION=1.6.6
+ARG ERLANG_VERSION=20.3
+ARG ELIXIR_VERSION=1.6.5
 
 SHELL ["/bin/bash", "-c"]
 RUN apt-get update && \
