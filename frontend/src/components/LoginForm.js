@@ -23,10 +23,10 @@ class LoginForm extends Component {
   }
 
   render() {
-    const {login, loginGithub} = this.props;
+    const {user, loginGithub} = this.props;
 
-    if (login.user) {
-      return (<div>Congrats {login.user.name}, you are logged in!</div>);
+    if (user) {
+      return (<div>Congrats {user.name}, you are logged in!</div>);
     } else {
       return (
         <div className="login-form">

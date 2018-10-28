@@ -3,26 +3,23 @@ import config from "../config";
 const loginGithub = (state) => {
   const loginURL = config.backend.endpoint + "/oauth/login/github?r=http://localhost:3000";
   const popup = window.open(loginURL, "loginPopup", "width=600,height=300");
-  const login = {...state.login, popup};
 
-  return {...state, login};
+  return {...state, popup};
 }
 
 const receiveAuthSuccess = (state, action) => {
-  const {popup} = state.login;
+  const {popup} = state;
 
   if (popup) {
     popup.close();
   }
 
   const {token, user} = action;
-  const login = {token, user};
-
-  return {...state, login};
+  return {token, user};
 }
 
 const receiveAuthFailure = (state, action) => {
-  const {popup} = state.login;
+  const {popup} = state;
 
   if (popup) {
     popup.close();
@@ -33,7 +30,7 @@ const receiveAuthFailure = (state, action) => {
   return state;
 }
 
-const login = (state = {login: {}}, action) => {
+const login = (state = {}, action) => {
   switch (action.type) {
     case "LOGIN_GITHUB":
       return loginGithub(state);
