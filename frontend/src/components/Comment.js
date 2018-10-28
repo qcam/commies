@@ -1,8 +1,12 @@
-import React from 'react';
+import React from "react";
+import "./Comment.css";
 
 const Comment = (comment) => {
   return (
-    <div className="comment">{ comment.content }</div>
+    <li className="comment">
+      <div className="user">{comment.user.name}</div>
+      <div className="content">{comment.content}</div>
+    </li>
   );
 }
 
