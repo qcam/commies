@@ -10,9 +10,13 @@ class CommentList extends Component {
   render() {
     const { comments } = this.props;
 
-    return comments.map(
-      comment => (<Comment key={ comment.id } { ...comment }/>)
-    );
+    if (comments.length === 0) {
+      return (<div>Be the first to comment</div>);
+    } else {
+      return comments.map(
+        comment => (<Comment key={ comment.id } { ...comment }/>)
+      );
+    }
   }
 }
 

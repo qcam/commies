@@ -1,8 +1,8 @@
-const comments = (state = {comments: []}, action) => {
+const comments = (state = {}, action) => {
   switch (action.type) {
     case "RECEIVE_COMMENTS":
       const { comments } = action;
-      return {comments: comments};
+      return {...state, comments};
 
     default:
       return state;
