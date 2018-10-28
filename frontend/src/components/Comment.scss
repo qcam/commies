@@ -1,0 +1,13 @@
+@import "../index.scss";
+
+.comment {
+  display: block;
+
+  @include element(user) {
+    font-weight: bold;
+  }
+
+  @include element(content) {
+    font-style: italic;
+  }
+}
