@@ -21,13 +21,9 @@ defmodule Commies.Router.AuthTest do
 
   describe "GET /oauth/login/github" do
     test "redirects to Github" do
-      url = "https://example.com?a=1&b=2"
-      state = compute_state(url)
-
       conn =
         :get
         |> conn("/oauth/login/github")
-        |> Map.put(:query_params, %{"r" => url})
         |> Router.call([])
 
       assert conn.resp_body == ""
@@ -46,7 +42,7 @@ defmodule Commies.Router.AuthTest do
       assert query["client_id"] == "dummy"
       assert query["redirect_uri"] == "http://localhost:3000/oauth/auth/github"
       assert query["scope"] == "user:email"
-      assert query["state"] == state
+      assert query["state"]
     end
   end
 
@@ -72,22 +68,11 @@ defmodule Commies.Router.AuthTest do
           {:ok, 200, [], Jason.encode!([%{email: "test@test.com", primary: true}])}
       end)
 
-      conn =
-        :get
-        |> conn("/oauth/auth/github")
-        |> Map.put(:query_params, req_params)
-        |> Router.call([])
-
-      assert conn.status == 302
-      assert [redirect_url] = get_resp_header(conn, "location")
-      assert uri = URI.parse(redirect_url)
-      assert uri.host == "example.com"
-      assert query = URI.decode_query(uri.query)
-      assert query["a"] == "1"
-      assert query["b"] == "2"
-      assert {:ok, auth_payload} = Auth.Token.verify(query["token"])
-      assert auth_payload.provider == "github"
-      assert auth_payload.token == "123456"
+      :get
+      |> conn("/oauth/auth/github")
+      |> Map.put(:query_params, req_params)
+      |> Router.call([])
+      |> assert_html_response(200)
     end
 
     test "handles bad request" do
@@ -95,17 +80,24 @@ defmodule Commies.Router.AuthTest do
         :get
         |> conn("/oauth/auth/github")
         |> Router.call([])
-        |> json_response(400)
+        |> assert_html_response(200)
 
-      assert body == %{"errors" => ["unable to authenticate user"]}
+      assert body ==
+        """
+        <html><head></head><body><script>
+        window.opener.postMessage({
+          type: "AUTH_FAILURE",
+          payload: {errors: ["unable to authenticate user"]}
+        }, "http://localhost:3000");
+        </script></body></html>
+        """
     end
   end
 
-  defp json_response(conn, status) do
+  defp assert_html_response(conn, status) do
     assert conn.status == status
-    assert get_resp_header(conn, "content-type") == ["application/json"]
-
-    Jason.decode!(conn.resp_body)
+    assert get_resp_header(conn, "content-type") == ["text/html"]
+    conn.resp_body
   end
 
   defp compute_state(url) do

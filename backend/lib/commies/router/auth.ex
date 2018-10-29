@@ -16,88 +16,84 @@ defmodule Commies.Router.Auth do
   get "/login/github" do
     callback_url = RouteHelper.append_base("/oauth/auth/github")
 
-    with {:ok, redirect_url} <- Map.fetch(conn.query_params, "r") do
-      encoded_redirect_url = Base.encode64(redirect_url)
+    location = Auth.Github.oauth_url("user:email", callback_url, generate_state(32))
 
-      signature =
-        encoded_redirect_url
-        |> Auth.Token.sign()
-        |> Base.encode64()
-
-      state = "#{encoded_redirect_url}.#{signature}"
-
-      location = Auth.Github.oauth_url("user:email", callback_url, state)
-
-      conn
-      |> put_resp_header("location", location)
-      |> send_resp(302, [])
-    else
-      :error ->
-        Router.send_json_resp(conn, 400, %{errors: ["bad params"]})
-    end
+    conn
+    |> put_resp_header("location", location)
+    |> send_resp(302, [])
   end
 
   get "/auth/github" do
     with {:ok, code} <- Map.fetch(conn.query_params, "code"),
          {:ok, state} <- Map.fetch(conn.query_params, "state"),
-         {:ok, redirect_url} <- decode_state(state),
-         redirect_uri = URI.parse(redirect_url),
+         :ok <- verify_state(state),
          {:ok, provider_access_token} <- Auth.Github.exchange_access_token(code),
          {:ok, user} <- Auth.Github.get_user(provider_access_token),
-         {:ok, email} <- Auth.Github.get_user_email(provider_access_token) do
-      params = %{
-        name: user.name,
-        email: email,
-        auth_provider: "github",
-        auth_user_id: user.id
-      }
+         {:ok, email} <- Auth.Github.get_user_email(provider_access_token),
+         params = %{
+           name: user.name,
+           email: email,
+           auth_provider: "github",
+           auth_user_id: user.id
+         },
+         {:ok, user} <- upsert_user(params) do
+      access_token = Auth.Token.generate("github", provider_access_token)
 
-      case upsert_user(params) do
-        {:ok, _user} ->
-          access_token = Auth.Token.generate("github", provider_access_token)
-
-          uri =
-            redirect_uri
-            |> build_redirect_uri(access_token)
-            |> URI.to_string()
-
-          conn
-          |> put_resp_header("location", uri)
-          |> send_resp(302, [])
-
-        {:error, changeset} ->
-          body = %{
-            errors: Router.format_changeset_errors(changeset)
-          }
-
-          Router.send_json_resp(conn, 400, body)
-      end
-    else
-      _ ->
-        body = %{
-          errors: ["unable to authenticate user"]
+      body = """
+      <html><head></head><body><script>
+      var payload = "#{access_token}";
+      window.opener.postMessage({
+        type: "AUTH_SUCCESS",
+        payload: {
+          token: payload,
+          user: #{Jason.encode!(user)}
         }
+      }, "http://localhost:3000");
+      </script></body></html>
+      """
 
-        Router.send_json_resp(conn, 400, body)
+      conn
+      |> put_resp_header("content-type", "text/html")
+      |> send_resp(200, body)
+    else
+      _other ->
+        body = """
+        <html><head></head><body><script>
+        window.opener.postMessage({
+          type: "AUTH_FAILURE",
+          payload: {errors: ["unable to authenticate user"]}
+        }, "http://localhost:3000");
+        </script></body></html>
+        """
+
+        conn
+        |> put_resp_header("content-type", "text/html")
+        |> send_resp(200, body)
     end
   end
 
-  defp decode_state(state) do
-    with [encoded_url, encoded_signature] <- String.split(state, ".", parts: 2),
+  defp generate_state(length) do
+    random_bytes =
+      length
+      |> :crypto.strong_rand_bytes()
+      |> Base.encode64()
+
+    signature =
+      random_bytes
+      |> Auth.Token.sign()
+      |> Base.encode64()
+
+    random_bytes <> "." <> signature
+  end
+
+  defp verify_state(state) do
+    with [encoded_bytes, encoded_signature] <- String.split(state, ".", parts: 2),
          {:ok, signature} <- Base.decode64(encoded_signature),
-         ^signature <- Auth.Token.sign(encoded_url) do
-      Base.decode64(encoded_url)
+         ^signature <- Auth.Token.sign(encoded_bytes) do
+      :ok
     else
       _other -> :error
     end
-  end
-
-  defp build_redirect_uri(%URI{} = uri, token) do
-    query = if uri.query, do: URI.decode_query(uri.query), else: %{}
-
-    query = Map.put(query, :token, token)
-
-    %{uri | query: URI.encode_query(query)}
   end
 
   defp upsert_user(params) do
