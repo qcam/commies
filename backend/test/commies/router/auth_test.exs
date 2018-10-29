@@ -83,14 +83,14 @@ defmodule Commies.Router.AuthTest do
         |> assert_html_response(200)
 
       assert body ==
-        """
-        <html><head></head><body><script>
-        window.opener.postMessage({
-          type: "AUTH_FAILURE",
-          payload: {errors: ["unable to authenticate user"]}
-        }, "http://localhost:3000");
-        </script></body></html>
-        """
+               """
+               <html><head></head><body><script>
+               window.opener.postMessage({
+                 type: "AUTH_FAILURE",
+                 payload: {errors: ["unable to authenticate user"]}
+               }, "http://localhost:3000");
+               </script></body></html>
+               """
     end
   end
 
