@@ -5,4 +5,6 @@ config :commies, Commies.Auth.Github,
 
 config :commies, Commies.RouteHelper, base: "http://commies-sg.hqc.me"
 
+config :commies, :frontend, endpoint: "http://commies.hqc.me"
+
 import_config "prod.secret.exs"

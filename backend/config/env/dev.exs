@@ -15,4 +15,7 @@ config :commies, Commies.Auth.Token, secret: "yoyo"
 
 config :commies, Commies.RouteHelper, base: "http://localhost:8000"
 
+config :commies, :frontend,
+  endpoint: "http://localhost:3000"
+
 import_config "../{dicon.exs}"

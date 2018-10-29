@@ -5,13 +5,18 @@ defmodule Commies.Router.Auth do
     Auth,
     Repo,
     RouteHelper,
-    Router,
     User
   }
 
   plug(Plug.Logger)
   plug(:match)
   plug(:dispatch)
+
+  @frontend_endpoint (
+    :commies
+    |> Application.fetch_env!(:frontend)
+    |> Keyword.fetch!(:endpoint)
+  )
 
   get "/login/github" do
     callback_url = RouteHelper.append_base("/oauth/auth/github")
@@ -48,7 +53,7 @@ defmodule Commies.Router.Auth do
           token: payload,
           user: #{Jason.encode!(user)}
         }
-      }, "http://localhost:3000");
+      }, "#{@frontend_endpoint}");
       </script></body></html>
       """
 
@@ -62,7 +67,7 @@ defmodule Commies.Router.Auth do
         window.opener.postMessage({
           type: "AUTH_FAILURE",
           payload: {errors: ["unable to authenticate user"]}
-        }, "http://localhost:3000");
+        }, "#{@frontend_endpoint}");
         </script></body></html>
         """
 
