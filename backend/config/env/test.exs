@@ -15,3 +15,5 @@ config :commies, Commies.Auth.Github,
 config :commies, Commies.RouteHelper, base: "http://localhost:3000"
 
 config :commies, Commies.Auth.Token, secret: "longlivetheparty"
+
+config :commies, :frontend, endpoint: "http://localhost:3000"
