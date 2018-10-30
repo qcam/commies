@@ -7,15 +7,15 @@ config :commies, Commies.Repo,
   hostname: "localhost"
 
 config :commies, Commies.Auth.Github,
-  client_id: "19aaaa54f4b9261a6627",
-  client_secret: "626a74e223ef386198c65f5bc728f9fb207998e0",
+  client_id: "your-github-client-id",
+  client_secret: "your-github-client-secret",
   http_client: Commies.HTTP.StandardClient
 
-config :commies, Commies.Auth.Token, secret: "yoyo"
+config :commies, Commies.Auth.Token, secret: "dummy-auth-token"
 
 config :commies, Commies.RouteHelper, base: "http://localhost:8000"
 
-config :commies, :frontend,
-  endpoint: "http://localhost:3000"
+config :commies, :frontend, endpoint: "http://localhost:3000"
 
 import_config "../{dicon.exs}"
+import_config "dev.secret.exs"
