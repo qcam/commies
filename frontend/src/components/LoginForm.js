@@ -4,7 +4,9 @@ import config from "../config";
 class LoginForm extends Component {
   componentDidMount() {
     window.addEventListener("message", event => {
-      if (event.origin === config.backend.endpoint) {
+      const backendEndpoint = new URL(config.backend.endpoint);
+
+      if (event.origin === backendEndpoint.origin) {
         const { type, payload } = event.data;
 
         switch (type) {

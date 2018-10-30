@@ -1,5 +1,6 @@
 export default {
   backend: {
-    endpoint: "http://localhost:8000"
+    // Because create-react-app is awesome. #not-really
+    endpoint: process.env.REACT_APP_BACKEND_ENDPOINT
   }
 }
