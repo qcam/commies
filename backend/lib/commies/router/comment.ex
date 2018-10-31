@@ -42,8 +42,15 @@ defmodule Commies.Router.Comment do
   end
 
   defp render_user(user) do
+    %{name: user.name}
+  end
+
+  defp render_one(comment) do
     %{
-      name: user.name
+      id: comment.id,
+      content: comment.content,
+      inserted_at: comment.inserted_at,
+      user: render_user(comment.user)
     }
   end
 
@@ -59,7 +66,8 @@ defmodule Commies.Router.Comment do
 
       case Repo.insert(changeset) do
         {:ok, comment} ->
-          Router.send_json_resp(conn, 200, comment)
+          comment = Repo.preload(comment, [:user])
+          Router.send_json_resp(conn, 200, render_one(comment))
 
         {:error, changeset} ->
           body = %{
