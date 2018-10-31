@@ -13,12 +13,6 @@ defmodule Commies.Router.Comment do
   plug(:match)
   plug(:dispatch)
 
-  @frontend_endpoint (
-    :commies
-    |> Application.fetch_env!(:frontend)
-    |> Keyword.fetch!(:endpoint)
-  )
-
   get "/" do
     link_id = conn.params["link_id"]
 
@@ -33,9 +27,7 @@ defmodule Commies.Router.Comment do
       comments: render_list(comments)
     }
 
-    conn
-    |> put_resp_header("access-control-allow-origin", @frontend_endpoint)
-    |> Router.send_json_resp(200, body)
+    Router.send_json_resp(conn, 200, body)
   end
 
   defp render_list(comments) do
