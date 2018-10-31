@@ -9,9 +9,23 @@ export const fetchComments = (linkID, page) => (
   )
 );
 
+export const postComment = (linkID, token, content) => (
+  dispatch => (
+    Backend.postComment(linkID, token, content).then(
+      comment => dispatch(receivePostCommentSuccess(comment)),
+      _error => {}
+    )
+  )
+);
+
 const receiveComments = (comments) => ({
   type: "RECEIVE_COMMENTS",
   comments: comments
+})
+
+const receivePostCommentSuccess = (comment) => ({
+  type: "RECEIVE_POST_COMMENT_SUCCESS",
+  comment: comment
 })
 
 export const loginGithub = () => ({
