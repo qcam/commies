@@ -8,6 +8,15 @@ defmodule Commies.Router do
     json_decoder: Jason
   )
 
+  plug(Corsica,
+    origins:
+      :commies
+      |> Application.fetch_env!(:frontend)
+      |> Keyword.fetch!(:endpoint),
+    allow_headers: :all,
+    allow_methods: :all
+  )
+
   plug(Plug.Logger)
   plug(Commies.Plug.Auth)
   plug(:match)

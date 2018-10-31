@@ -12,11 +12,9 @@ defmodule Commies.Router.Auth do
   plug(:match)
   plug(:dispatch)
 
-  @frontend_endpoint (
-    :commies
-    |> Application.fetch_env!(:frontend)
-    |> Keyword.fetch!(:endpoint)
-  )
+  @frontend_endpoint :commies
+                     |> Application.fetch_env!(:frontend)
+                     |> Keyword.fetch!(:endpoint)
 
   get "/login/github" do
     callback_url = RouteHelper.append_base("/oauth/auth/github")

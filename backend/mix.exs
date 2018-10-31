@@ -27,6 +27,7 @@ defmodule Commies.MixProject do
   defp deps() do
     [
       {:plug, "~> 1.5.1"},
+      {:corsica, "~> 1.0"},
       {:cowboy, "~> 1.1"},
       {:ecto, "~> 2.0"},
       {:postgrex, "~> 0.11"},
