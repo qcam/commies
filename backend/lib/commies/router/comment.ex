@@ -42,7 +42,10 @@ defmodule Commies.Router.Comment do
   end
 
   defp render_user(user) do
-    %{name: user.name}
+    %{
+      name: user.name,
+      avatar_url: "https://avatars1.githubusercontent.com/u/#{user.auth_user_id}?v=4"
+    }
   end
 
   defp render_one(comment) do

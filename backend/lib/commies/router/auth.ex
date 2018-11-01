@@ -49,7 +49,7 @@ defmodule Commies.Router.Auth do
         type: "AUTH_SUCCESS",
         payload: {
           token: payload,
-          user: #{Jason.encode!(user)}
+          user: #{render_user(user)}
         }
       }, "#{@frontend_endpoint}");
       </script></body></html>
@@ -109,5 +109,13 @@ defmodule Commies.Router.Auth do
     ]
 
     Repo.insert(changeset, insert_options)
+  end
+
+  defp render_user(%User{} = user) do
+    Jason.encode!(%{
+      name: user.name,
+      auth_provider: user.auth_provider,
+      avatar_url: "https://avatars1.githubusercontent.com/u/#{user.auth_user_id}?v=4"
+    })
   end
 end
