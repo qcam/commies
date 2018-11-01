@@ -1,6 +1,8 @@
 import React from "react";
 import config from "../config";
 
+import "./CommentForm.scss";
+
 const handleSubmit = (e, input, props) => {
   e.preventDefault();
 
@@ -20,12 +22,16 @@ const CommentForm = (props) => {
 
   if (user) {
     let input;
+    const infoMessage = "Life is short, don't make it hard.";
 
     return (
-      <form onSubmit={e => handleSubmit(e, input, props)}
+      <form className="comment-form" onSubmit={e => handleSubmit(e, input, props)}
       >
-        <textarea ref={node => (input = node)} placeholder="post-your-comment here"></textarea>
-        <button>Submit</button>
+        <textarea className="comment-form__input" ref={node => (input = node)} placeholder="What is your opinion?"></textarea>
+        <div className="comment-form__actions">
+          <div className="comment-form__info">{infoMessage}</div>
+          <button className="comment-form__button">Submit</button>
+        </div>
       </form>
     );
   } else {

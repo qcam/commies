@@ -1,13 +1,37 @@
-@import "../index.scss";
+@import "../foundation.scss";
 
 .comment {
-  display: block;
+  display: flex;
+  flex-direction: row;
+  margin: 0 0 30px 0;
 
-  @include element(user) {
-    font-weight: bold;
+  @include element(avatar) {
+    flex-basis: 45px;
+    margin-right: 15px;
+
+    @include element(photo) {
+      width: 45px;
+      height: 45px;
+    }
   }
 
   @include element(content) {
-    font-style: italic;
+    flex: 1;
+    word-break: break-all;
+    hyphens: auto;
+  }
+
+  @include element(user) {
+    font-weight: bold;
+    margin: 0 0 5px 0;
+  }
+
+  @include element(meta) {
+    font-size: 0.8em;
+    margin: 0 0 5px 0;
+  }
+
+  @include element(text) {
+    line-height: 120%;
   }
 }

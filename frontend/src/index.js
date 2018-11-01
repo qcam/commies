@@ -9,6 +9,8 @@ import rootReducer from "./reducers";
 import App from "./components/App";
 import LoginStorage from "./LoginStorage";
 
+import "./index.scss";
+
 const url = new URL(window.location.href);
 
 const initState = {

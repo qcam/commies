@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import config from "../config";
+import "./LoginForm.scss";
 
 class LoginForm extends Component {
   componentDidMount() {
@@ -27,14 +28,14 @@ class LoginForm extends Component {
   render() {
     const {user, loginGithub} = this.props;
 
-    if (user) {
-      return (<div>Congrats {user.name}, you are logged in!</div>);
-    } else {
+    if (!user) {
       return (
         <div className="login-form">
-          <a href="#login" onClick={loginGithub}>Login with Github</a>
+          <a href="#login" className="login-form__button login-form__button--github" onClick={loginGithub}>Login with Github</a>
         </div>
       );
+    } else {
+      return null;
     }
   }
 }

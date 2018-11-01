@@ -4,7 +4,7 @@ import CommentContainer from "../containers/CommentContainer";
 import CommentFormContainer from "../containers/CommentFormContainer";
 
 const App = () => (
-  <div>
+  <div className="app">
     <LoginContainer/>
     <CommentContainer/>
     <CommentFormContainer/>
